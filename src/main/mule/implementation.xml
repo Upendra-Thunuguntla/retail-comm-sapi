@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="send-email-flow" doc:id="4f93ea99-06d8-484b-b5e6-1b69573cf189" >
+		<ee:transform doc:name="DW set api payload" doc:id="ccfe2102-e646-45e3-9630-47ddb1e29e0b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json  skipNullOn="everywhere"
+---
+{
+  "personalizations": [
+    {
+      "to": payload.receipents.to map ((emailId, index) -> 
+      {
+          email: emailId
+      }),
+      "cc": payload.receipents.cc map ((emailId, index) -> 
+      {
+          email: emailId
+      }),
+      "subject": payload.receipents.subject
+    }
+  ],
+  "content": payload.content map ((item, index) -> 
+    {
+      "type": item."type" default "text/plain",
+      "value": item.value
+    }
+  ),
+  "from": {
+    "email": "upendra.thunuguntla@gmail.com",
+  },
+  "attachments": payload.attachments map {
+    "content": $.content,
+    ("type": $."type") if ($."type" != null),
+    "filename": $.filename
+  }
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="POST | SendGrid API | mail/send" doc:id="d2fd1902-f4ac-4610-91cb-2fc2e5cfa51e" config-ref="sendgrid-email-request-config" path="/mail/send"/>
+		<logger level="INFO" doc:name="Success Message" doc:id="f44ebae9-79ae-4371-8fb0-67f898fddf54" message="Email Sent Successfully"/>
+		<ee:transform doc:name="DW set success response" doc:id="afe1b2e6-1565-4ae0-b292-0c402d2c5763" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	message : "Email Sent Successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-continue enableNotifications="false" logException="true" doc:name="On Error Continue" doc:id="66f6dd0f-8e71-4c6b-9e08-2385e7060a7a" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="944eaa0e-dc3d-49dc-90fe-91bb13a35861" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Error with Email sending : " ++ (error.errorMessage.payload..message[0] default "Check logs for more info"),
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<flow-ref doc:name="common-error-appender" doc:id="966f33dd-fb1f-42b5-8928-b984d3788393" name="common-error-appender"/>
+				<logger level="ERROR" doc:name="Error Logger" doc:id="6c112282-6569-4530-b985-1c28ae759297" message="#[payload]"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>
