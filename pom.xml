@@ -51,6 +51,9 @@
 						<formats>
 							<format>html</format>
 						</formats>
+						<ignoreFlows>
+							<ignoreFlow>get:\health-check:retail-comm-sapi-config</ignoreFlow>
+						</ignoreFlows>
 					</coverage>
 				</configuration>
 			</plugin>

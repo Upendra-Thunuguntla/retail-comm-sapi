@@ -98,7 +98,7 @@ output application/json
             </on-error-propagate>
         </error-handler>
     </flow>
-    <flow name="post:\email\send:application\json:retail-comm-sapi-config">
+    <flow name="post:\email\send:application\json:retail-comm-sapi-config" doc:id="bf942bb1-443b-4c7d-8939-065d4085deaa">
         <flow-ref doc:name="send-email-flow" doc:id="a0926122-4185-4f46-b164-1ac8fe6eb410" name="send-email-flow" />
     </flow>
     <flow name="get:\health-check:retail-comm-sapi-config">

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="implementation-suite.xml" />
+	<munit:test name="send-email-flow-success-test" doc:id="606b4bb6-075e-4b3e-ab08-33b088594a61" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock POST | SendGrid API | mail/send" doc:id="212a7a2b-5083-401b-a607-8035e7894269" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="d2fd1902-f4ac-4610-91cb-2fc2e5cfa51e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://sendemailflowtest\mock_payload.dwl')]" encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://sendemailflowtest\mock_attributes.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="outboundHeaders" value="#[readUrl('classpath://sendemailflowtest\mock_variable_.dwl')]" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="9dc1f0e6-afa1-4922-bcf9-d4db953e464a" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://sendemailflowtest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://sendemailflowtest\set-event_attributes.dwl')]" />
+				<munit:variables >
+					<munit:variable key="outboundHeaders" value="#[readUrl('classpath://sendemailflowtest\set-event_variable_.dwl')]" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="post:\email\send:application\json:retail-comm-sapi-config" doc:id="a21dfb11-93e0-43d5-bee8-2606de00465f" name="post:\email\send:application\json:retail-comm-sapi-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="logger" doc:id="118afc55-4b23-4bd4-8336-5194e23b4bcd" processor="logger">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Success Message" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="f44ebae9-79ae-4371-8fb0-67f898fddf54" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Email Sent Successfully" attributeName="message" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="send-email-flow-fail-test" doc:id="06c8dddb-8ede-4f64-aaf5-0321f95faa06" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock POST | SendGrid API | mail/send" doc:id="f9d15885-89bd-41a7-8cf8-d590a570072f" processor="http:request" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="d2fd1902-f4ac-4610-91cb-2fc2e5cfa51e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://sendemailflowtest\mock_payload.dwl')]" encoding="UTF-8" />
+					<munit-tools:error typeId="HTTP:BAD_REQUEST" />
+					<munit-tools:variables >
+						<munit-tools:variable key="outboundHeaders" value="#[readUrl('classpath://sendemailflowtest\mock_variable_.dwl')]" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="15bce42b-d88e-4cf7-9bae-662f496b5314" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://sendemailflowtest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://sendemailflowtest\set-event_attributes.dwl')]" />
+				<munit:variables >
+					<munit:variable key="outboundHeaders" value="#[readUrl('classpath://sendemailflowtest\set-event_variable_.dwl')]" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="post:\email\send:application\json:retail-comm-sapi-config" doc:id="42c5d49e-0cee-4936-9521-ca16da2d8ce2" name="post:\email\send:application\json:retail-comm-sapi-config" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="logger" doc:id="acee8a83-3854-4721-a00f-3de8913a31af" processor="logger" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ERROR" attributeName="level" />
+					<munit-tools:with-attribute whereValue="Error Logger" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="6c112282-6569-4530-b985-1c28ae759297" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
